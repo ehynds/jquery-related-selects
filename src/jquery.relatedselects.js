@@ -1,5 +1,5 @@
 /*
- * jQuery related selects plug-in 0.1
+ * jQuery related selects plug-in 1.0
  *
  * http://www.erichynds.com
  *
@@ -29,9 +29,8 @@
 			if($.isArray(opts.selects)){
 				var arrSelects = opts.selects;
 				opts.selects = {};
-				for(var i=0; i < arrSelects.length; i++){
+				for(var i=0; i < arrSelects.length; i++)
 					opts.selects[ arrSelects[i] ] = {};
-				};
 			};
 			
 			for(key in opts.selects) selects.push(key);
@@ -48,11 +47,10 @@
 				var $next 			= next(elem,$this); // the select box after this one
 				var selectedValue		= $select.children('option:selected').attr('value'); // currently selected value
 				
-				// extend specific options for this select
+				// extend specific options for this select.
+				// set the defaultOptionText to whatever was passed in or the option where value is blank.
 				o = $.extend({
-					onChangeLoad: '',
-					loadingMessage: 'Loading, please wait...',
-					defaultOptionText: $select.data('defaultOption') || 'Choose &raquo;'
+					defaultOptionText: opts.defaultOptionText || $select.data('defaultOption') 
 				}, opts, o);
 				
 				// store the new default option text
@@ -122,7 +120,7 @@
 			var html = '<option value="" selected="selected">' + $select.data('defaultOption') + '</option>';
 			
 			$.each(data, function(i,item){
-				html = html + '<option value="'+i+'">' + item + '</option>';
+				html += '<option value="'+i+'">' + item + '</option>';
 			});
 
 			$select.html(html).removeAttr('disabled');
@@ -138,10 +136,10 @@
 	};
 	
 	function resetAfter(elem,context){
-		var thispos = getPosition(elem,context), x, selects = context.data('selects');
-		for (x=thispos+1; x < selects.length; x++){
+		var thispos = getPosition(elem,context), selects = context.data('selects');
+		for (var x = thispos+1; x < selects.length; x++){
 			$("select[name='" + selects[x] + "']", context ).attr("disabled","disabled").children("option:first").attr("selected","selected");
-		}
+		};
 	};
 	
 	function next(elem,context){
@@ -159,6 +157,8 @@
 	// default options
 	$.fn.relatedSelects.options = {
 		selects: {},
+		loadingMessage: 'Loading, please wait...',
+		onChangeLoad: '',
 		onLoadingStart: function(){},
 		onLoadingEnd: function(){},
 		onChange: function(){}
