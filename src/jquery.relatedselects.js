@@ -45,7 +45,7 @@
 			$.each(opts.selects, function(elem,o){
 				var $select 		= $("select[name='" + elem + "']", $this); // jquery ref to this select box
 				var $next 			= next(elem,$this); // the select box after this one
-				var selectedValue		= $select.children('option:selected').attr('value'); // currently selected value
+				var selectedValue		= $select.find('option:selected').attr('value'); // currently selected value
 				
 				// extend specific options for this select.
 				// set the defaultOptionText to whatever was passed in or the option where value is blank.
@@ -74,14 +74,14 @@
 	function saveDefaults(context){
 		$.each(opts.selects, function(elem,o){
 			var $elem = $("select[name='" + elem + "']", context);
-			$elem.data('defaultOption', $elem.children('option[value=""]').text());
+			$elem.data('defaultOption', $elem.find('option[value=""]').text());
 		});
 	};
 
 	function process( $select, $next, elem, o, context ){
 		if($next.length === 0) return;
 		var thispos = getPosition( elem,context );
-		var value = $.trim($select.children('option:selected').attr('value'));
+		var value = $.trim($select.find('option:selected').attr('value'));
 		
 		// if this select box's length has been changed to a legit value, and there is another select box after this one
 		if( value.length > 0 && value !== o.loadingMessage && $next){
@@ -131,14 +131,14 @@
 	};
 	
 	function isPopulated($select){
-		var options = $select.children('option');
-		return (options.length === 0 || (options.length === 1 && $select.children('option:selected').attr('value').length === 0)) ? false : true;
+		var options = $select.find('option');
+		return (options.length === 0 || (options.length === 1 && $select.find('option:selected').attr('value').length === 0)) ? false : true;
 	};
 	
 	function resetAfter(elem,context){
 		var thispos = getPosition(elem,context), selects = context.data('selects');
 		for (var x = thispos+1; x < selects.length; x++){
-			$("select[name='" + selects[x] + "']", context ).attr("disabled","disabled").children("option:first").attr("selected","selected");
+			$("select[name='" + selects[x] + "']", context ).attr("disabled","disabled").find("option:first").attr("selected","selected");
 		};
 	};
 	
@@ -151,7 +151,7 @@
 		var selects = context.data('selects');
 		for (var i=0; i < selects.length; i++){
 			if(selects[i] == elem) return i;
-		}
+		};
 	};
 	
 	// default options

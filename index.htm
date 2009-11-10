@@ -11,6 +11,7 @@ $(function(){
 	
 	$("#example-1, #example-3").relatedSelects({
 		onChangeLoad: 'datasupplier.php',
+		defaultOptionText: 'Choose an Option',
 		selects: {
 			'stateID':		{ loadingMessage:'Loading Counties...' },
 			'countyID':		{ loadingMessage:'Loading Towns...' },
@@ -99,7 +100,7 @@ the 'Town' select automatically populates. Individual selects do not have any cu
 
 
 <h2>Example 3</h2>
-<p>The state select is populated, and the other three are completely empty.</p>
+<p>The state select is populated, and the HTML structure of the other three are completely empty when the page loads.</p>
 <form id="example-3">
 	<select name="stateID">
 	<option value="">Choose State &raquo;</option>
