@@ -1,5 +1,5 @@
 /*
- * jQuery related selects plug-in 1.0
+ * jQuery related selects plug-in 0.1
  *
  * http://www.erichynds.com
  *
@@ -112,6 +112,7 @@
 		// disable this select box, add loading msg
 		$select.attr("disabled", "disabled").html('<option>' + o.loadingMessage + '</option>');
 		
+		// TODO: make these callbacks fire at accurate points... ditch getJSON
 		// onLoadingStart callback
 		o.onLoadingStart.call($select); 
 		

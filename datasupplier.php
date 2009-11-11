@@ -1,6 +1,6 @@
 <?php 
 
-// simulate that this proccess might take a while so you can see the "please wait" in the select box.
+// simulate that this proccess might take a while so you can see the loadingMessage option work.
 sleep(1);
 
 $stateID = $_GET['stateID'];
