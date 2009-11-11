@@ -1,5 +1,7 @@
 # jQuery Related Selects
 
+Demo @ http://erichynds.com/examples/jquery-related-selects/
+
 jQuery Related Selects is a plugin that allows you to create any number of select boxes whose options are determined upon the selected value of another.  
 You pass an array or object of select box names, and the select boxes will depend on each other in the order in which they are passed in.
 
