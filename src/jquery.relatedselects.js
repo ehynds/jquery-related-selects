@@ -29,8 +29,9 @@
 			if($.isArray(opts.selects)){
 				var arrSelects = opts.selects;
 				opts.selects = {};
-				for(var i=0; i < arrSelects.length; i++)
+				for(var i=0; i < arrSelects.length; i++){
 					opts.selects[ arrSelects[i] ] = {};
+				};
 			};
 			
 			for(key in opts.selects) selects.push(key);
@@ -43,9 +44,9 @@
 			
 			// go through each select box & settings passed into options
 			$.each(opts.selects, function(elem,o){
-				var $select 		= $("select[name='" + elem + "']", $this); // jquery ref to this select box
-				var $next 			= next(elem,$this); // the select box after this one
-				var selectedValue		= $select.find('option:selected').attr('value'); // currently selected value
+				var $select = $("select[name='" + elem + "']", $this); // jquery ref to this select box
+				var $next = next(elem,$this); // the select box after this one
+				var selectedValue = $select.find('option:selected').attr('value'); // currently selected value
 				
 				// extend specific options for this select.
 				// set the defaultOptionText to whatever was passed in or the option where value is blank.
@@ -80,7 +81,6 @@
 
 	function process( $select, $next, elem, o, context ){
 		if($next.length === 0) return;
-		var thispos = getPosition( elem,context );
 		var value = $.trim($select.find('option:selected').attr('value'));
 		
 		// if this select box's length has been changed to a legit value, and there is another select box after this one
