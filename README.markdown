@@ -47,12 +47,16 @@ Required.  The file to call to retrieve data when a select box is changed.  Data
 
 > loadingMessage
 
-Optional.  The text to change the sibling select box to during the AJAX request.
+Optional.  The text to change the sibling select box to during the AJAX request.  Defaults to &quot;Loading, please wait...&quot;.
 
 > defaultOptionText
 
 Optional.  The text inside the default <option> tag after AJAX populates a select box.  This is typically the text where you instruct the user
 to choose an option.  If this option is not provided and an <option> tag with a blank value attribute exists in your markup, that text will be used.
+
+> disableIfEmpty
+
+Optional.  Keep select2 disabled if select1 does not return any results.  Defaults to false.  Also see the onEmptyResult callback.
 
 > onLoadingStart
 
@@ -65,3 +69,7 @@ Optional.  A callback to fire when the AJAX call ends.
 > onChange
 
 Optional.  A callback to fire when a select box is changed.
+
+> onEmptyResult
+
+Optional.  A callback to fire when no results are returned after changing a select.

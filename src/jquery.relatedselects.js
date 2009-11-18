@@ -1,5 +1,5 @@
 /*
- * jQuery related selects plug-in 0.1
+ * jQuery related selects plug-in 0.2
  *
  * http://www.erichynds.com
  *
@@ -85,20 +85,20 @@
 		
 		// if this select box's length has been changed to a legit value, and there is another select box after this one
 		if( value.length > 0 && value !== o.loadingMessage && $next){
-		
+			
 			// reset all selects after this one
 			resetAfter(elem,context);
 			
 			// populate the next select
-			populate($next,o,context);
-
+			populate($select,$next,o,context);
+			
 		// otherwise, make all the selects after this one disabled and select the first option
 		} else if($next) {
 			resetAfter(elem,context);
 		};
 	};
 	
-	function populate($select,o,context){
+	function populate($callerSelect,$select,o,context){
 		var selects = context.data('selects'), selectors = [], params = [];
 		
 		// build a selector for each select box in this context
@@ -110,30 +110,42 @@
 		params = $( selectors.join(','), context ).serialize();
 
 		// disable this select box, add loading msg
-		$select.attr("disabled", "disabled").html('<option>' + o.loadingMessage + '</option>');
+		$select.attr("disabled", "disabled").html('<option value="">' + o.loadingMessage + '</option>');
 		
-		// TODO: make these callbacks fire at accurate points... ditch getJSON
-		// onLoadingStart callback
-		o.onLoadingStart.call($select); 
-		
-		// grab the data
-		$.getJSON(o.onChangeLoad, params, function(data){
-			var html = '<option value="" selected="selected">' + $select.data('defaultOption') + '</option>';
-			
-			$.each(data, function(i,item){
-				html += '<option value="'+i+'">' + item + '</option>';
-			});
+		// perform ajax request
+		$.ajax({
+			beforeSend: function(){ o.onLoadingStart.call($select); },
+			complete: function(){ o.onLoadingEnd.call($select); },
+			dataType: 'json',
+			data: params,
+			url: o.onChangeLoad,
+			success: function(data){
+				// set the default option in the select
+				var html = '<option value="" selected="selected">' + $select.data('defaultOption') + '</option>';
+				
+				// if the value returned from the ajax request is valid json and isn't empty
+				if(typeof(data) === 'object' && data){
+					
+					// build the options
+					$.each(data, function(i,item){
+						html += '<option value="'+i+'">' + item + '</option>';
+					});
 
-			$select.html(html).removeAttr('disabled');
-			
-			// end callback
-			o.onLoadingEnd.call($select); 
+					$select.html(html).removeAttr('disabled');
+				
+				// if the response is invalid/empty, reset the default option and fire the onEmptyResult callback
+				} else {
+					$select.html(html);
+					if(!o.disableIfEmpty){ $select.removeAttr('disabled'); };
+					o.onEmptyResult.call($callerSelect);
+				};
+			}
 		});
 	};
 	
 	function isPopulated($select){
 		var options = $select.find('option');
-		return (options.length === 0 || (options.length === 1 && $select.find('option:selected').attr('value').length === 0)) ? false : true;
+		return (options.length === 0 || (options.length === 1 && options.filter(':first').attr('value').length === 0)) ? false : true;
 	};
 	
 	function resetAfter(elem,context){
@@ -151,7 +163,7 @@
 	function getPosition(elem,context){
 		var selects = context.data('selects');
 		for (var i=0; i < selects.length; i++){
-			if(selects[i] == elem) return i;
+			if(selects[i] === elem){ return i; };
 		};
 	};
 	
@@ -159,10 +171,12 @@
 	$.fn.relatedSelects.options = {
 		selects: {},
 		loadingMessage: 'Loading, please wait...',
+		disableIfEmpty: false,
 		onChangeLoad: '',
 		onLoadingStart: function(){},
 		onLoadingEnd: function(){},
-		onChange: function(){}
+		onChange: function(){},
+		onEmptyResult: function(){}
 	};
 	
 })(jQuery);

@@ -10,11 +10,14 @@ $townID = $_GET['townID'];
 $states = array();
 $states['MA'] = "Massachusetts";
 $states['VT'] = "Vermont";
+$states['SC'] = "South Carolina";
+
 
 $counties = array();
 $counties['MA']['BARN'] = 'Barnstable';
 $counties['MA']['PLYM'] = 'Plymouth';
 $counties['VT']['CHIT'] = 'Chittenden';
+$counties['SC']['ANDE'] = 'Anderson';
 
 $towns = array();
 $towns['MA']['BARN']['CHA'] = "Chatham";
@@ -60,12 +63,15 @@ $villages['VT']['CHIT']['ESS']['ESSE'] = 'Essex';
 $villages['VT']['CHIT']['ESS']['ESSJ'] = 'Essex Junction';
 $villages['VT']['CHIT']['ESS']['JERI'] = 'Jerico';
 
+
 if($stateID && !$countyID && !$townID){
 	echo json_encode( $counties[$stateID] );
 } elseif( $stateID && $countyID && !$townID ) {
 	echo json_encode( $towns[$stateID][$countyID] );
-} else {
+} elseif( isset($villages[$stateID][$countyID][$townID]) ) {
 	echo json_encode( $villages[$stateID][$countyID][$townID] );
+} else {
+	echo '{}';
 }
 
 ?>

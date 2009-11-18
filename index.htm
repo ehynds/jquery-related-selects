@@ -36,13 +36,27 @@ $(function(){
 		onChangeLoad: 'datasupplier.php',
 		selects: ['stateID', 'countyID'],
 		onChange: function(){
+			// 'this' is a reference to the changed select box
 			alert( $(this).attr('name') + ' changed!');
 		},
 		onLoadingStart: function(){
+			// 'this' is a reference to the sibling select box that just had data loaded into it.
 			$(this).siblings('div').html("Loading, please wait...");
 		},
 		onLoadingEnd: function(){
+			// 'this' is a reference to the sibling select box that just had data loaded into it.
 			$(this).siblings('div').html("Please choose an option above.");
+		}
+	});
+	
+	$("#example-6").relatedSelects({
+		onChangeLoad: 'datasupplier.php',
+		loadingMessage: 'Please wait',
+		selects: ['stateID', 'countyID','townID'],
+		disableIfEmpty:true,
+		onEmptyResult: function(){
+			// 'this' is a reference to the changed select box
+			alert('Unable to find any matches for ' + $(this).find('option:selected').text() + '!');
 		}
 	});
 });
@@ -146,6 +160,26 @@ the 'Town' select automatically populates. Individual selects do not have any cu
 	</select>
 	
 	<div><!-- placeholder for our callback message --></div>
+</form>
+
+<h2>Example 6</h2>
+<p>Using the DisableIfEmpty option &amp; the onEmptyResult callback.</p>
+<form id="example-6">
+	<select name="stateID">
+	<option value="">Choose State &raquo;</option>
+	<option value="TX">Texas</option>
+	<option value="SC">South Carolina</option>
+	</select>
+
+	<select name="countyID">
+	<option value="">Choose County &raquo;</option>
+	</select>
+	
+	<select name="townID">
+	<option value="">Choose Town &raquo;</option>
+	</select>
+	
+	<div></div>
 </form>
 
 
