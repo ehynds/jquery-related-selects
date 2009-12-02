@@ -8,7 +8,7 @@ jQuery Related Selects is a plugin that allows you to create any number of selec
 You pass an array or object of select box names, and the select boxes will depend on each other in the order in which they are passed in.
 
 When a select box is changed an AJAX request is sent to the file specified in the onChangeLoad property, passing the selected value of each select box
-as parameters.  For now the data must be returned in JSON format.  An <option> must have a legitimate value in order to trigger the script.  An <option>
+as parameters.  The data must be returned in either JSON or HTML format.  An <option> must have a legitimate value in order to trigger the script.  An <option>
 where the value is blank (value="") is used for the defaultOptionText option (see below).
 
 This script provides a high level of customization.  You can set the options once for each select to use, or set the options on a select-by-select basis.
@@ -17,7 +17,7 @@ You can also start your markup with pre-populated options and selected values.
 ### Usage
 
 A basic example.  Changing the "stateID" select updates the "countyID" select and so on.  The values of all four select
-boxes are serialized and passed to datasupplier.php, which returns data for the next select box in JSON format.
+boxes are serialized and passed to datasupplier.php, which returns data for the next select box in JSON format (default).
 
 	<form>
 		<select name="stateID">
@@ -42,9 +42,13 @@ boxes are serialized and passed to datasupplier.php, which returns data for the 
 Required.  An array or object of select boxes you want to be dependent.  Each one will depend on each other **in the order in which they are passed in.**  If you want to 
 override any of the options below on a select-by-select basis you can pass this as an object.  See examples.
 
+> dataType
+
+The type of data the server will return.  Either 'json' or 'html'.
+
 > onChangeLoad
 
-Required.  The file to call to retrieve data when a select box is changed.  Data must be returned in JSON format for now.
+Required.  The file to call to retrieve data when a select box is changed.
 
 > loadingMessage
 

@@ -4,7 +4,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>jQuery Related Selects</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"></script>
-<script src="src/jquery.relatedselects.new.js" type="text/javascript"></script>
+<script src="src/jquery.relatedselects.min.js" type="text/javascript"></script>
+
+<style type="text/css">
+body { font:12px helvetica, arial, sans-serif; }
+</style>
 
 <script type="text/javascript">
 $(function(){
@@ -58,6 +62,12 @@ $(function(){
 			alert('Unable to find any matches for ' + $(this).find('option:selected').text() + '!');
 		}
 	});
+	
+	$("#example-7").relatedSelects({
+		onChangeLoad: 'datasupplier.htm',
+		dataType: 'html',
+		selects: ['stateID', 'countyID']
+	});
 });
 </script>
 
@@ -66,8 +76,13 @@ $(function(){
 <body>
 
 <h1>jQuery Related Selects Plugin</h1>
-<p><a href="http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/">&laquo; Back to Blog Post</a></p>
-<p>Docs &amp; download at <a href="http://github.com/ferric84/jquery-related-selects">http://github.com/ferric84/jquery-related-selects</a></p>
+
+<ul>
+<li><a href="http://github.com/ferric84/jquery-related-selects">Documentation &amp; download</a> at GitHub</li>
+<li>My original <a href="http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/">blog post and comments</a></li>
+</ul>
+
+<p>Note that in examples 1-6, the file that supplies the data pauses for 1 second so you can see the loading messages.</p>
 
 <h2>Example 1</h2>
 <p>The state select is pre-populated, and the rest will populate based on preceding values.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.</p>
@@ -182,6 +197,19 @@ the 'Town' select automatically populates. Individual selects do not have any cu
 	<div></div>
 </form>
 
+
+<h2>Example 7</h2>
+<p>Retreiving data in HTML format instead of JSON.  This option gives you more control of the options, like the ability to add optgroups.  <a href="datasupplier.htm">View the data file.</a></p>
+<form id="example-7">
+	<select name="stateID">
+	<option value="">Choose State &raquo;</option>
+	<option value="CA">California</option>
+	</select>
+
+	<select name="countyID">
+	<option value="">Choose County &raquo;</option>
+	</select>
+</form>
 
 </body>
 </html>

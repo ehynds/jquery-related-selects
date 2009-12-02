@@ -6,6 +6,7 @@ sleep(1);
 $stateID = $_GET['stateID'];
 $countyID = $_GET['countyID'];
 $townID = $_GET['townID'];
+$html = $_GET['html'];
 
 $states = array();
 $states['MA'] = "Massachusetts";
