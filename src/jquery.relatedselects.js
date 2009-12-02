@@ -125,6 +125,9 @@
 				
 				// if the value returned from the ajax request is valid json and isn't empty
 				if(typeof(data) === 'object' && data){
+				
+					
+					Cache.save($select,$callerSelect,data);
 					
 					// build the options
 					$.each(data, function(i,item){
@@ -166,6 +169,61 @@
 			if(selects[i] === elem){ return i; };
 		};
 	};
+
+
+	var Cache = {
+		size: 0,
+		
+		save: function($select,$caller,data){
+			this.select = $select;
+			this.caller = $caller;
+			this.data = data;
+			this.add();
+		},
+		
+		add: function(){
+			var cache = this.select.data('rs_cache');
+			var key = this.caller.find('option:selected').val();
+			
+			if(!cache) cache = {};
+			cache[key] = this.data;
+			this.select.data('rs_cache', cache);
+			this.size++;
+			
+			console.log('cache added for', this.select, this.data);
+			console.log('CURRENT CACHE:', this.select.data('rs_cache'), 'size:', this.size);
+		},
+		
+		exists: function(){
+			return false;
+		}
+	};
+	
+	
+	/*
+	function Cache($select, key, obj){
+		this.cache = [];
+		
+		this.save = function(){
+			
+		};
+		
+		function add(){
+			this.cache[key] = obj;
+			console.log('cache added for', $select, obj);
+			
+			console.log('CURRENT CACHE:', this.cache);
+		};
+		
+		function exists(){
+			return false;
+		};
+		
+		
+	};*/
+	
+
+	
 	
 	// default options
 	$.fn.relatedSelects.options = {
