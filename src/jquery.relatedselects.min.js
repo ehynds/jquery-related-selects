@@ -2,7 +2,7 @@
  * jQuery Related Selects plug-in 1.0
  *
  * http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/
- * http://github.com/ferric84/jquery-related-selects
+ * http://github.com/ehynds/jquery-related-selects
  *
  * Copyright (c) 2009 Eric Hynds
  *
