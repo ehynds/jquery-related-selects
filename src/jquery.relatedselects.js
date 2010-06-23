@@ -1,5 +1,5 @@
 /*
- * jQuery Related Selects plug-in 1.0
+ * jQuery Related Selects plug-in 1.1
  *
  * http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/
  * http://github.com/ehynds/jquery-related-selects
