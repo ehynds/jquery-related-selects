@@ -26,12 +26,12 @@
 		// if the selects option is an array convert it to an object
 		if($.isArray(opts.selects)){
 			selectsToObj();
-		};
+		}
 		
 		// make array of select names
-		for(var key in opts.selects){
-			selects.push(key); 
-		};
+		$.each(opts.selects, function(){
+			selects.push(key);
+		});
 		
 		// cache the options where the value is empty for each select before processing occurs.
 		saveDefaultOptionText(); 
@@ -60,12 +60,12 @@
 			// if there is already a selected option in this select and the next one is already populated, skip this iteration
 			if(selectedValue && selectedValue.length > 0 && isPopulated($next)){
 				return;
-			};
+			}
 			
 			// process the select box upon page load
 			process( $select, $next, elem, o );
 		});
-
+		
 		function saveDefaultOptionText(){
 			var $select, text;
 			
@@ -73,13 +73,13 @@
 				$select = $context.find("select[name='"+ selects[x] +"']");
 				text = $select.find("option[value='']").text();
 				$select.data('defaultOption', text);
-			};
-		};
-
+			}
+		}
+		
 		function process($select,$next,elem,o){
 			if(!$next.length){
 				return;
-			};
+			}
 			
 			var value = $.trim($select.val());
 		
@@ -95,16 +95,16 @@
 			// otherwise, make all the selects after this one disabled and select the first option
 			} else if($next){
 				resetAfter(elem);
-			};
-		};
-	
+			}
+		}
+		
 		function populate($caller,$select,o){
-			var selectors = [], params = [];
+			var selectors = [], params;
 		
 			// build a selector for each select box in this context
 			for(var x=0, len=selects.length; x<len; x++){
 				selectors.push('select[name="'+selects[x]+'"]');
-			};
+			}
 		
 			// take those selectors and serialize the data in them
 			params = $( selectors.join(','), $context ).serialize();
@@ -125,7 +125,7 @@
 					// set the default option in the select.
 					if(defaultOptionText.length > 0){
 						html.push('<option value="" selected="selected">' + defaultOptionText + '</option>');
-					};
+					}
 					
 					// if the value returned from the ajax request is valid json and isn't empty
 					if(o.dataType === 'json' && typeof data === 'object' && data){
@@ -145,46 +145,46 @@
 					// if the response is invalid/empty, reset the default option and fire the onEmptyResult callback
 					} else {
 						$select.html( html.join('') );
-						if(!o.disableIfEmpty){ $select.removeAttr('disabled'); };
+						if(!o.disableIfEmpty){ $select.removeAttr('disabled'); }
 						o.onEmptyResult.call($caller);
-					};
+					}
 				}
 			});
-		};
+		}
 	
 		function isPopulated($select){
 			var options = $select.find('option');
 			return (options.length === 0 || (options.length === 1 && options.filter(':first').attr('value').length === 0)) ? false : true;
-		};
-	
+		}
+		
 		function resetAfter(elem){
 			var thispos = getPosition(elem);
-			for (var x = thispos+1, len=selects.length; x<len; x++){
+			for (var x=thispos+1, len=selects.length; x<len; x++){
 				$("select[name='" + selects[x] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected');
-			};
-		};
-	
+			}
+		}
+		
 		function next(elem){
 			return $context.find("select[name='" + selects[ getPosition(elem)+1 ] + "']");
-		};
-
+		}
+		
 		// returns the position of an element in the array
 		function getPosition(elem){
 			for (var i=0, len=selects.length; i<len; i++){
 				if(selects[i] === elem){ 
 					return i; 
-				};
-			};
-		};
-	
+				}
+			}
+		}
+		
 		// converts an array of selects to an object
 		function selectsToObj(){
 			var arrSelects = opts.selects;
 			opts.selects = {};
 			for(var i=0, len=arrSelects.length; i<len; i++){
 				opts.selects[ arrSelects[i] ] = {};
-			};
-		};
+			}
+		}
 	};
 
 	$.fn.relatedSelects.defaults = {
