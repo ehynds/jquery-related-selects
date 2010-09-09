@@ -1,214 +1,158 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>jQuery Related Selects</title>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
-<script src="src/jquery.relatedselects.min.js" type="text/javascript"></script>
-
 <style type="text/css">
 body { font:12px helvetica, arial, sans-serif; }
+h2 { margin:25px 0 }
+#placeholder { color:green }
 </style>
-
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
+<script type="text/javascript" src="src/jquery.relatedselects.js"></script>
 <script type="text/javascript">
 $(function(){
 
-	$("#example-1, #example-3").relatedSelects({
-		onChangeLoad: 'datasupplier.php',
-		defaultOptionText: 'Choose an Option',
-		selects: {
-			'stateID':		{ loadingMessage:'Loading Counties...' },
-			'countyID':		{ loadingMessage:'Loading Towns...' },
-			'townID':		{ loadingMessage:'Loading Villages...' },
-			'villageID':	{}
+	$("#example-basic").relatedSelects({
+		"basic-countyID": {
+			depends: "basic-stateID",
+			loadingMessage: "Loading counties....",
+			source: 'datasupplier.php'
+		},
+		"basic-townID": {
+			depends: "basic-countyID",
+			loadingMessage: "Loading towns....",
+			source: 'datasupplier.php'
+		},
+		"basic-villageID": {
+			depends: "basic-townID",
+			loadingMessage: "Loading villages....",
+			source: 'datasupplier.php'
 		}
-	});
-	
-	$("#example-2").relatedSelects({
-		onChangeLoad: 'datasupplier.php',
-		loadingMessage: 'Please wait',
-		selects: ['stateID', 'countyID', 'townID', 'villageID']
-	});
-	
-	$("#example-4").relatedSelects({
-		onChangeLoad: 'datasupplier.php',
-		selects: ['stateID', 'countyID']
 	});
 
-	$("#example-5").relatedSelects({
-		onChangeLoad: 'datasupplier.php',
-		selects: ['stateID', 'countyID'],
-		onChange: function(){
-			// 'this' is a reference to the changed select box
-			alert( $(this).attr('name') + ' changed!');
+	var placeholder = $("#placeholder");
+	$("#example-depends").relatedSelects({
+		"depends-state": {
+			depends: "depends-country",
+			loadingMessage: "Loading states....",
+			source: function(){
+				return [
+					{ value:"MA", text:"Massachusetts"},
+					{ value:"VT", text:"Vermont" }
+				];
+			}
 		},
-		onLoadingStart: function(){
-			// 'this' is a reference to the sibling select box that just had data loaded into it.
-			$(this).siblings('div').html("Loading, please wait...");
+		
+		"depends-county": {
+			depends: "depends-state",
+			loadingMessage: "Loading counties...",
+			source: [
+				{ value: "BARN", text:"Barnstable" },
+				{ value: "PLYM", text:"Plymouth" }
+			]
 		},
-		onLoadingEnd: function(){
-			// 'this' is a reference to the sibling select box that just had data loaded into it.
-			$(this).siblings('div').html("Please choose an option above.");
+		
+		"depends-town": {
+			// you don't really need to enumerate each one here
+			// since they all depend on each other, but it's useful
+			// to display which dependencies have been met
+			// and which ones are left
+			depends: ["depends-country", "depends-state", "depends-county", "depends-color"],
+			source: [
+				{ value: "CHA", text:"Chatham" },
+				{ value: "ORL", text:"Orleans" }
+			],
+			loadingMessage: "Loading towns....",
+			onDependencyChanged: function( satisfied, dependencies ){
+				var html = [], left = $.map(dependencies, function(elem){
+					return $.inArray(elem.name, satisfied) === -1 ? elem.name : null;
+				});
+				
+				if( satisfied.length < dependencies.length ){
+					html.push('<b>'+satisfied.join('</b> and <b>')+'</b> ');
+					html.push(satisfied.length > 1 ? 'dependencies have ' : 'dependency has ');
+					html.push('been met, but you still need to select a ');
+					html.push('<b>' + left.join('</b> and <b>') + '</b>.');
+				} else if( !satisfied.length) {
+					html.push('You need to choose something from these selects: ');
+					html.push('<b>' + left.join('</b>, <b>') + '</b>');
+				} else {
+					html.push('<b>All dependencies are met!</b>');
+				}
+				
+				placeholder.html( html.join('') );
+			},
+			onLoadingStart: function(){
+				placeholder.html("Loading towns...");
+			},
+			onLoadingEnd: function(){
+				placeholder.html("");
+			}
 		}
-	});
-	
-	$("#example-6").relatedSelects({
-		onChangeLoad: 'datasupplier.php',
-		loadingMessage: 'Please wait',
-		selects: ['stateID', 'countyID','townID'],
-		disableIfEmpty:true,
-		onEmptyResult: function(){
-			// 'this' is a reference to the changed select box
-			alert('Unable to find any matches for ' + $(this).find('option:selected').text() + '!');
-		}
-	});
-	
-	$("#example-7").relatedSelects({
-		onChangeLoad: 'datasupplier.htm',
-		dataType: 'html',
-		selects: ['stateID', 'countyID']
 	});
 });
 </script>
 
 </head>
-
 <body>
 
-<h1>jQuery Related Selects Plugin</h1>
+<h1>jQuery Related Selects Plugin 2.0</h1>
 
-<ul>
-<li><a href="http://github.com/ehynds/jquery-related-selects">Documentation &amp; download</a> at GitHub</li>
-<li>My original <a href="http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/">blog post and comments</a></li>
-</ul>
-
-<p>Note that in examples 1-6, the file that supplies the data <b>pauses for 1 second</b> so you can see the loading messages.</p>
-
-<h2>Example 1</h2>
-<p>The state select is pre-populated, and the rest will populate based on preceding values.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.</p>
-<form id="example-1">
-	<select name="stateID">
+<h2>Demo: basic usage</h2>
+<p>The state select is pre-populated, and the rest will populate based on preceding values.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.  This demo shows four select boxes, but you can have as little as 2 and as many as your heart desires.</p>
+<form id="example-basic">
+	<select id="basic-stateID" name="stateID">
 	<option value="">Choose State &raquo;</option>
 	<option value="MA">Massachusetts</option>
 	<option value="VT">Vermont</option>
 	</select>
 
-	<select name="countyID">
+	<select id="basic-countyID" name="countyID">
 	<option value="">Choose County &raquo;</option>
 	</select>
 
-	<select name="townID">
+	<select id="basic-townID" name="townID">
 	<option value="">Choose Town &raquo;</option>
 	</select>
 
-	<select name="villageID">
+	<select id="basic-villageID" name="villageID">
 	<option value="">Choose Village &raquo;</option>
 	</select>
 </form>
 
-<h2>Example 2</h2>
-<p>The state and county selects are pre-populated and legitimate values are selected.  Since the 'County' select already has a selected option,
-the 'Town' select automatically populates. Individual selects do not have any custom settings.  No defaultOptionText override.</p>
-<form id="example-2">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="MA" selected="selected">Massachusetts</option>
-	<option value="VT">Vermont</option>
-	</select>
-
-	<select name="countyID">
-	<option value="">Choose County &raquo;</option>
-	<option value="BARN" selected="selected">Barnstable</option>
-	</select>
-
-	<select name="townID">
-	<option value="">Choose Town &raquo;</option>
-	</select>
-	
-	<select name="villageID">
-	<option value="">Choose Village &raquo;</option>
-	</select>
-</form>
-
-
-<h2>Example 3</h2>
-<p>The state select is populated, and the HTML structure of the other three are completely empty when the page loads.</p>
-<form id="example-3">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="MA">Massachusetts</option>
-	<option value="VT">Vermont</option>
-	</select>
-
-	<select name="countyID"></select>
-
-	<select name="townID"></select>
-
-	<select name="villageID"></select>
-</form>
-
-<h2>Example 4</h2>
-<p>Basic, just two selects.</p>
-<form id="example-4">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="MA">Massachusetts</option>
-	<option value="VT">Vermont</option>
-	</select>
-
-	<select name="countyID">
-	<option value="">Choose County &raquo;</option>
-	</select>
-</form>
-
-<h2>Example 5</h2>
-<p>Using the onChange, onLoadingStart &amp; onLoadingEnd callbacks.</p>
-<form id="example-5">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="MA">Massachusetts</option>
-	<option value="VT">Vermont</option>
-	</select>
-
-	<select name="countyID">
-	<option value="">Choose County &raquo;</option>
-	</select>
-	
-	<div><!-- placeholder for our callback message --></div>
-</form>
-
-<h2>Example 6</h2>
-<p>Using the DisableIfEmpty option &amp; the onEmptyResult callback.</p>
-<form id="example-6">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="TX">Texas</option>
-	<option value="SC">South Carolina</option>
-	</select>
-
-	<select name="countyID">
-	<option value="">Choose County &raquo;</option>
-	</select>
-	
-	<select name="townID">
-	<option value="">Choose Town &raquo;</option>
-	</select>
-	
-	<div></div>
-</form>
-
-
-<h2>Example 7</h2>
-<p>Retreiving data in HTML format instead of JSON.  This option gives you more control of the options, like the ability to add optgroups.  <a href="datasupplier.htm">View the data file.</a></p>
-<form id="example-7">
-	<select name="stateID">
-	<option value="">Choose State &raquo;</option>
-	<option value="CA">California</option>
-	</select>
-
-	<select name="countyID">
-	<option value="">Choose County &raquo;</option>
-	</select>
+<h2>Demo: multiple dependencies</h2>
+<form id="example-depends">
+    <p>The country select is pre-populated when the page loads.  The state's datasource is a function that returns an array, the county's datasource is an array, and the town's datasource is an array.</p>
+    
+    <select name="country" id="depends-country">
+        <option value="">Select a Country</option>
+        <option value="US">USA! USA!</option>
+        <option value="CA">Canada</option>
+    </select>
+    
+    <select name="state" id="depends-state">
+        <option value="">Select a State</option>
+    </select>
+    
+    <select name="county" id="depends-county">
+        <option value="">Select a County</option>
+    </select>
+    
+    <select name="town" id="depends-town">
+        <option value="">Select a Town</option>
+        <option value="CHA">Chatham</option>
+    </select>
+    
+    <p>In order to populate the towns select, I also need to know your favorite color!  OMG multiple dependencies!</p>
+    
+    <select name="color" id="depends-color">
+        <option value="">Select a Color</option>
+        <option value="blue">blue</option>
+        <option value="red">red</option>
+    </select>
+    
+    <p id="placeholder"></p>
 </form>
 
 </body>

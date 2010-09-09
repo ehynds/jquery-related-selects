@@ -1,203 +1,218 @@
-/*
- * jQuery Related Selects plug-in 1.1
- *
- * http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/
- * http://github.com/ehynds/jquery-related-selects
- *
- * Copyright (c) 2009 Eric Hynds
- *
- * Dual licensed under the MIT and GPL licenses:
- *   http://www.opensource.org/licenses/mit-license.php
- *   http://www.gnu.org/licenses/gpl.html
- */
+// jquery related selects plugin by eric hynds, erichynds.com
+// re-write of http://github.com/ehynds/jquery-related-selects
 
 (function($){
-	$.fn.relatedSelects = function(opts){
-		opts = $.extend({}, $.fn.relatedSelects.defaults, opts);
-	
-		return this.each(function(){
-			new RelatedSelect(this, opts);
-		});
-	};
 
-	var RelatedSelect = function(context, opts) {
-		var $context = $(context), selects = [];
+$.fn.relatedSelects = function( options ){
 	
-		// if the selects option is an array convert it to an object
-		if($.isArray(opts.selects)){
-			selectsToObj();
-		}
+	function RelatedSelect( form, options ){
+		var selects = this.selects = [], form = $(form);
 		
-		// make array of select names
-		$.each(opts.selects, function(){
-			selects.push(key);
+		// build an array of select instances
+		$.each(options, function( name ){
+			selects.push( new Select( name, this, form ) );
 		});
 		
-		// cache the options where the value is empty for each select before processing occurs.
-		saveDefaultOptionText(); 
+		// store obj in form's data cache
+		$.data(form, "relatedSelects", this);
+		
+		return this;
+	}
 	
-		// go through each select box & settings passed into options
-		$.each(opts.selects, function(elem,o){
-			var $select = $context.find("select[name='" + elem + "']"), // jquery ref to this select box
-				$next = next(elem), // the select box after this one
-				selectedValue = $select.val(); // currently selected value
+	function Select( name, options, form ){
+		var elem = document.getElementById( name );
+		this.form = form;
+		this.element = $(elem);
+		this.options = $.extend({}, $.fn.relatedSelects.options, options);
+		this.dependencies = [];
+		this.satisfied = [];
 		
-			// extend element-specific options
-			// set the defaultOptionText to whatever was passed in or the option where value is blank.
-			o = $.extend({
-				defaultOptionText: opts.defaultOptionText || $select.data('defaultOption') 
-			}, opts, o);
+		// let's do this thing
+		this._init();
 		
-			// store the new default option text
-			$select.data('defaultOption', o.defaultOptionText);
-
-			// bind the change event
-			$select.change(function(){
-				o.onChange.call($select);
-				process( $select, $next, elem, o );
-			});
+		return this;
+	}
 	
-			// if there is already a selected option in this select and the next one is already populated, skip this iteration
-			if(selectedValue && selectedValue.length > 0 && isPopulated($next)){
-				return;
-			}
+	Select.prototype = {
+		_init: function(){
+			var self = this,
+				opts = self.options,
+				depends = opts.depends,
+				satisfied = self.satisfied,
+				dependencies = self.dependencies;
 			
-			// process the select box upon page load
-			process( $select, $next, elem, o );
-		});
-		
-		function saveDefaultOptionText(){
-			var $select, text;
-			
-			for(var x=1, len=selects.length; x<len; x++){
-				$select = $context.find("select[name='"+ selects[x] +"']");
-				text = $select.find("option[value='']").text();
-				$select.data('defaultOption', text);
-			}
-		}
-		
-		function process($select,$next,elem,o){
-			if(!$next.length){
-				return;
-			}
-			
-			var value = $.trim($select.val());
-		
-			// if this select box's length has been changed to a legit value, and there is another select box after this one
-			if(value.length > 0 && value !== o.loadingMessage && $next){
-			
-				// reset all selects after this one
-				resetAfter(elem);
-			
-				// populate the next select
-				populate($select,$next,o);
-			
-			// otherwise, make all the selects after this one disabled and select the first option
-			} else if($next){
-				resetAfter(elem);
-			}
-		}
-		
-		function populate($caller,$select,o){
-			var selectors = [], params;
-		
-			// build a selector for each select box in this context
-			for(var x=0, len=selects.length; x<len; x++){
-				selectors.push('select[name="'+selects[x]+'"]');
-			}
-		
-			// take those selectors and serialize the data in them
-			params = $( selectors.join(','), $context ).serialize();
-		
-			// disable this select box, add loading msg
-			$select.attr('disabled', 'disabled').html('<option value="">' + o.loadingMessage + '</option>');
-		
-			// perform ajax request
-			$.ajax({
-				beforeSend: function(){ o.onLoadingStart.call($select); },
-				complete: function(){ o.onLoadingEnd.call($select); },
-				dataType: o.dataType,
-				data: params,
-				url: o.onChangeLoad,
-				success: function(data){
-					var html = [], defaultOptionText = $select.data('defaultOption');
-					
-					// set the default option in the select.
-					if(defaultOptionText.length > 0){
-						html.push('<option value="" selected="selected">' + defaultOptionText + '</option>');
-					}
-					
-					// if the value returned from the ajax request is valid json and isn't empty
-					if(o.dataType === 'json' && typeof data === 'object' && data){
-					
-						// build the options
-						$.each(data, function(i,item){
-							html.push('<option value="'+i+'">' + item + '</option>');
-						});
-
-						$select.html( html.join('') ).removeAttr('disabled');
+			// build an array of dependencies
+			if( typeof depends === "string" && depends.length ){
+				dependencies.push( document.getElementById(depends) );
 				
-					// html datatype
-					} else if(o.dataType === 'html' && $.trim(data).length > 0){
-						html.push($.trim(data));
-						$select.html( html.join('') ).removeAttr('disabled');
+			} else if( $.isArray(depends) ){
+				dependencies = $.map(depends, function(elem){
+					return document.getElementById( elem );
+				});
+			}
+			
+			// disable selects that have dependencies
+			if( dependencies.length ){
+				self.element.attr("disabled","disabled");
+			}
+			
+			// build a loading message
+			self.loading = $('<option selected="selected">'+opts.loadingMessage+'</option>');
+			
+			// listen to the change event on each dependency
+			// self obj in here is the elem being updated!
+			// "this" is the calling select box
+			$(dependencies).bind("change.relatedselects", function(){
 				
-					// if the response is invalid/empty, reset the default option and fire the onEmptyResult callback
-					} else {
-						$select.html( html.join('') );
-						if(!o.disableIfEmpty){ $select.removeAttr('disabled'); }
-						o.onEmptyResult.call($caller);
+				// get the relatedselect obj associated with the calling elem
+				var obj = $.data(this, "relatedSelect") || {},
+					o = $.extend({}, opts, obj.options || {}),
+					defaultValue = o.defaultValue,
+					index = $.inArray(this.name, satisfied);
+				
+				// abort the current ajax request if exists
+				if( self.xhr ){
+					self.xhr.abort();
+				}
+				
+				// selected an option considered to be invalid?
+				if( this.value == defaultValue  ){
+					satisfied.splice(index, 1);
+					
+					// reset element
+					self.element
+						.attr("disabled","disabled")
+						.find("option[value="+defaultValue +"]")
+						.attr("selected","selected")
+						.trigger("change.relatedselects");
+					
+					// legit values, mark as satisfied
+				} else {
+					if( index === -1 ){
+						satisfied.push( this.name );
 					}
 				}
-			});
-		}
-	
-		function isPopulated($select){
-			var options = $select.find('option');
-			return (options.length === 0 || (options.length === 1 && options.filter(':first').attr('value').length === 0)) ? false : true;
-		}
-		
-		function resetAfter(elem){
-			var thispos = getPosition(elem);
-			for (var x=thispos+1, len=selects.length; x<len; x++){
-				$("select[name='" + selects[x] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected');
-			}
-		}
-		
-		function next(elem){
-			return $context.find("select[name='" + selects[ getPosition(elem)+1 ] + "']");
-		}
-		
-		// returns the position of an element in the array
-		function getPosition(elem){
-			for (var i=0, len=selects.length; i<len; i++){
-				if(selects[i] === elem){ 
-					return i; 
+				
+				// fire onchange callback
+				o.onChange.call( self.element, this, dependencies.length-satisfied.length );
+				self.options.onDependencyChanged.call( self.element, satisfied, dependencies );
+				
+				// if this select box is satisfied, run it.
+				if( satisfied.length === dependencies.length ){
+					self._fetch( this );
 				}
-			}
-		}
+			});
+		},
 		
-		// converts an array of selects to an object
-		function selectsToObj(){
-			var arrSelects = opts.selects;
-			opts.selects = {};
-			for(var i=0, len=arrSelects.length; i<len; i++){
-				opts.selects[ arrSelects[i] ] = {};
+		// "this" is the select being updated, not the caller
+		_fetch: function( caller ){
+			var self = this,
+				opts = self.options,
+				elem = this.element,
+				source = opts.source;
+			
+			// insert loading option
+			this.loading.prependTo( elem );
+			
+			// resolve function sources
+			if( $.isFunction(source) ){
+				source = source.call( self.form[0] );
 			}
+			
+			// ajax data source
+			if( typeof source === "string" ){
+				this.xhr = $.ajax({
+					url: opts.source,
+					dataType: opts.dataType,
+					data: self.form.serialize(),
+					beforeSend: function(){
+						opts.onLoadingStart.call( elem );
+					},
+					success: function( data ){
+						self._populate( data );
+					},
+					complete: function(){
+						self.loading.detach();
+						opts.onLoadingEnd.call( elem );
+					},
+					error: function(){
+						opts.onError.call( elem );
+					}
+				});
+				
+				// array datasource
+			} else if( $.isArray( source ) ){
+				self._populate( source );
+			}
+		},
+		
+		// data fed from _fetch
+		_populate: function( data ){
+			var html = [], select = this.element;
+ 
+			// if the value returned from the ajax request is valid json and isn't empty
+			if($.isPlainObject(data) && !$.isEmptyObject(data)){
+				
+				// build the options
+				$.each(data, function(i,item){
+					html.push('<option value="'+i+'">' + item + '</option>');
+				});
+				
+				// html datatype
+			} else if( typeof data === "string" && $.trim(data).length ){
+				
+				html.push($.trim(data));
+				
+				// arrays
+			} else if( $.isArray(data) && data.length ){
+				
+				$.each(data, function(i,obj){
+					html.push('<option value="'+obj.value+'">' + obj.text + '</option>');
+				});
+				
+				// if the response is invalid/empty, reset the default option
+				// and fire the onEmptyResult callback
+			} else {
+				
+				if( !opts.disableIfEmpty ){
+					select.removeAttr('disabled');
+				}
+				
+				opts.onEmptyResult.call( select, caller );
+			}
+			
+			select
+				.find("option:gt(1)") // TODO: change this
+				.remove()
+				.end()
+				.append( html.join('') )
+				.removeAttr('disabled');
+			
+			// remove the loading message
+			this.loading.detach();
 		}
 	};
+	
+	return this.each(function(){
+		$.data(this, "relatedSelect", this, new RelatedSelect( this, options ));
+	});
+};
 
-	$.fn.relatedSelects.defaults = {
-		selects: {},
-		loadingMessage: 'Loading, please wait...',
-		disableIfEmpty: false,
-		dataType: 'json',
-		onChangeLoad: '',
-		onLoadingStart: function(){},
-		onLoadingEnd: function(){},
-		onChange: function(){},
-		onEmptyResult: function(){}
-	};
+// default options
+$.fn.relatedSelects.options = {
+	loadingMessage: "Loading...",
+	source: null,
+	dataType: "json",
+	depends: null,
+	disableIfEmpty: false,
+	defaultValue: "",
+	onLoadingStart: $.noop,
+	onLoadingEnd: $.noop,
+	onDependencyChanged: $.noop,
+	onEmptyResult: $.noop,
+	onChange: $.noop,
+	onError: $.noop
+};
 
+// end plugin closure
 })(jQuery);
-
