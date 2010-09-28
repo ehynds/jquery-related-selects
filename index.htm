@@ -17,12 +17,19 @@ $(function(){
 		"basic-countyID": {
 			depends: "basic-stateID",
 			loadingMessage: "Loading counties....",
-			source: 'datasupplier.php'
+			source: [
+				{ value: 'foo', text:'foo' },
+				{ value: 'bar', text:'bar' }
+			]
 		},
 		"basic-townID": {
 			depends: "basic-countyID",
 			loadingMessage: "Loading towns....",
-			source: 'datasupplier.php'
+			selected: "bar",
+			source: [
+				{ value: 'foo', text:'foo' },
+				{ value: 'bar', text:'bar' }
+			]
 		},
 		"basic-villageID": {
 			depends: "basic-townID",
@@ -108,7 +115,7 @@ $(function(){
 	<option value="VT">Vermont</option>
 	</select>
 
-	<select id="basic-countyID" name="countyID">
+	<select id="basic-countyID" name="countyID" data-selected="bar">
 	<option value="">Choose County &raquo;</option>
 	</select>
 

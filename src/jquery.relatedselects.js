@@ -6,11 +6,11 @@
 $.fn.relatedSelects = function( options ){
 	
 	function RelatedSelect( form, options ){
-		var selects = this.selects = [], form = $(form);
+		var selects = this.selects = [], form = $(form), i = 0;
 		
 		// build an array of select instances
 		$.each(options, function( name ){
-			selects.push( new Select( name, this, form ) );
+			selects[i++] = new Select( name, this, form );
 		});
 		
 		// store obj in form's data cache
@@ -148,30 +148,30 @@ $.fn.relatedSelects = function( options ){
 		
 		// data fed from _fetch
 		_populate: function( data ){
-			var html = [], select = this.element;
+			var html = [], select = this.element, selected, match;
  
 			// if the value returned from the ajax request is valid json and isn't empty
-			if($.isPlainObject(data) && !$.isEmptyObject(data)){
+			if( $.isPlainObject(data) && !$.isEmptyObject(data) ){
 				
 				// build the options
 				$.each(data, function(i,item){
 					html.push('<option value="'+i+'">' + item + '</option>');
 				});
 				
-				// html datatype
-			} else if( typeof data === "string" && $.trim(data).length ){
+			// html datatype
+			} else if( typeof data === 'string' && $.trim(data).length ){
 				
 				html.push($.trim(data));
 				
-				// arrays
+			// array of objects
 			} else if( $.isArray(data) && data.length ){
 				
 				$.each(data, function(i,obj){
 					html.push('<option value="'+obj.value+'">' + obj.text + '</option>');
 				});
 				
-				// if the response is invalid/empty, reset the default option
-				// and fire the onEmptyResult callback
+			// if the response is invalid/empty, reset the default option
+			// and fire the onEmptyResult callback
 			} else {
 				
 				if( !opts.disableIfEmpty ){
@@ -181,12 +181,27 @@ $.fn.relatedSelects = function( options ){
 				opts.onEmptyResult.call( select, caller );
 			}
 			
+			// inject new markup
 			select
-				.find("option:gt(1)") // TODO: change this
+				.find('option:gt(1)') // TODO: change this
 				.remove()
 				.end()
 				.append( html.join('') )
 				.removeAttr('disabled');
+			
+			// look for a data-selected attr and a match
+			selected = select.attr('data-selected');
+			
+			if( selected ){
+				match = select.find('option').filter(function(){
+					return this.value === selected;
+				}).attr('selected','selected');
+				
+				// only trigger change event if there was a matching value
+				if( match.length ){
+					select.trigger('change');
+				}
+			}
 			
 			// remove the loading message
 			this.loading.detach();
