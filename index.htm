@@ -5,8 +5,10 @@
 <title>jQuery Related Selects</title>
 <style type="text/css">
 body { font:12px helvetica, arial, sans-serif; }
-h2 { margin:25px 0 }
-#placeholder { color:green }
+h2 { margin:25px 0 20px 0 }
+#placeholder { color:black; padding:8px; border:2px solid black; display:none }
+#placeholder.success { color:green; border-color:green; }
+#placeholder.error { color:red; border-color: red }
 </style>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
 <script type="text/javascript" src="src/jquery.relatedselects.js"></script>
@@ -69,16 +71,21 @@ $(function(){
 					return $.inArray(elem.name, satisfied) === -1 ? elem.name : null;
 				});
 				
-				if( satisfied.length < dependencies.length ){
+				placeholder.show();
+				
+				if( !satisfied.length ) {
+					placeholder.addClass('error');
+					html.push('You need to choose something from these selects: ');
+					html.push('<b>' + left.join('</b>, <b>') + '</b>');
+				} else if( satisfied.length < dependencies.length ){
+					placeholder.addClass('error');
 					html.push('<b>'+satisfied.join('</b> and <b>')+'</b> ');
 					html.push(satisfied.length > 1 ? 'dependencies have ' : 'dependency has ');
 					html.push('been met, but you still need to select a ');
 					html.push('<b>' + left.join('</b> and <b>') + '</b>.');
-				} else if( !satisfied.length) {
-					html.push('You need to choose something from these selects: ');
-					html.push('<b>' + left.join('</b>, <b>') + '</b>');
 				} else {
-					html.push('<b>All dependencies are met!</b>');
+					placeholder.removeClass('error').addClass('success');
+					html.push('<b>All dependencies are met!  You can now select a town!</b>');
 				}
 				
 				placeholder.html( html.join('') );
@@ -169,7 +176,7 @@ $(function(){
         <option value="red">red</option>
     </select>
     
-    <p id="placeholder"></p>
+    <p id="placeholder" class="error"></p>
 </form>
 
 <h2>Demo: automatically select values</h2>
