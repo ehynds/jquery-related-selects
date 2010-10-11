@@ -1,5 +1,15 @@
-// jquery related selects plugin by eric hynds, erichynds.com
-// re-write of http://github.com/ehynds/jquery-related-selects
+/*
+ * jQuery Related Selects plug-in 2.0
+ *
+ * http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/
+ * http://github.com/ehynds/jquery-related-selects
+ *
+ * Copyright (c) 2010 Eric Hynds, erichynds.com
+ *
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ */
 
 (function($){
 
