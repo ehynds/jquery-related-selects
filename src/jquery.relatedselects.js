@@ -101,6 +101,12 @@ $.fn.relatedSelects = function( options ){
 				if( satisfied.length === dependencies.length ){
 					self._fetch( this );
 				}
+			})
+			.filter(function(){
+				return $(this).find(":selected").val() !== opts.defaultValue;
+			})
+			.each(function(){
+				$(this).triggerHandler("change.relatedselects");
 			});
 		},
 		

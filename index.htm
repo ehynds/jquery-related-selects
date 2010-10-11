@@ -14,19 +14,18 @@ h2 { margin:25px 0 }
 $(function(){
 
 	$("#example-basic").relatedSelects({
-		"basic-countyID": {
-			depends: "basic-stateID",
+		"basic-county": {
+			depends: "basic-state",
 			loadingMessage: "Loading counties...",
 			source: "datasupplier.php"
 		},
-		"basic-townID": {
-			depends: "basic-countyID",
+		"basic-town": {
+			depends: "basic-county",
 			loadingMessage: "Loading towns...",
-			selected: "bar",
 			source: "datasupplier.php"
 		},
-		"basic-villageID": {
-			depends: "basic-townID",
+		"basic-village": {
+			depends: "basic-town",
 			loadingMessage: "Loading villages...",
 			source: 'datasupplier.php'
 		}
@@ -92,6 +91,23 @@ $(function(){
 			}
 		}
 	});
+	
+	$("#example-attr").relatedSelects({
+		"attr-state": {
+			depends: "attr-country",
+			loadingMessage: "Loading states...",
+			source: [
+				{ value: "MA", text:"Massachusetts" }
+			]
+		},
+		"attr-county": {
+			depends: "attr-state",
+			loadingMessage: "Loading towns...",
+			source: [
+				{ value: "BARN", text:"Barnstable" }
+			]
+		}
+	});
 });
 </script>
 
@@ -103,21 +119,21 @@ $(function(){
 <h2>Demo: basic usage</h2>
 <p>The state select is pre-populated, and the rest will populate based on preceding values.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.  This demo shows four select boxes, but you can have as little as 2 and as many as your heart desires.</p>
 <form id="example-basic">
-	<select id="basic-stateID" name="stateID">
+	<select id="basic-state" name="stateID">
 	<option value="">Choose State &raquo;</option>
 	<option value="MA">Massachusetts</option>
 	<option value="VT">Vermont</option>
 	</select>
 
-	<select id="basic-countyID" name="countyID">
+	<select id="basic-county" name="countyID">
 	<option value="">Choose County &raquo;</option>
 	</select>
 
-	<select id="basic-townID" name="townID">
+	<select id="basic-town" name="townID">
 	<option value="">Choose Town &raquo;</option>
 	</select>
 
-	<select id="basic-villageID" name="villageID">
+	<select id="basic-village" name="villageID">
 	<option value="">Choose Village &raquo;</option>
 	</select>
 </form>
@@ -132,7 +148,7 @@ $(function(){
         <option value="CA">Canada</option>
     </select>
     
-    <select name="state" id="depends-state" data-selected="MA">
+    <select name="state" id="depends-state">
         <option value="">Select a State</option>
     </select>
     
@@ -154,6 +170,24 @@ $(function(){
     </select>
     
     <p id="placeholder"></p>
+</form>
+
+<h2>Demo: automatically select values</h2>
+<p>A common use case is pre-selecting values that are returned from the server, like in an edit form.  By adding the HTML5 <strong>data-selected</strong> attribute to your select, with a value to match a value returned from your source attribute, you can automatically select a dynamically created option.</p>
+
+<form id="example-attr">
+    <select name="country" id="attr-country">
+        <option value="">Select a Country</option>
+        <option value="US" selected="selected">USA! USA!</option>
+    </select>
+    
+    <select name="state" id="attr-state" data-selected="MA">
+        <option value="">Select a State</option>
+    </select>
+
+    <select name="town" id="attr-county" data-selected="BARN">
+        <option value="">Select a County</option>
+    </select>
 </form>
 
 </body>
