@@ -148,7 +148,7 @@ $.fn.relatedSelects = function( options ){
 		
 		// data fed from _fetch
 		_populate: function( data ){
-			var html = [], select = this.element, selected, match;
+			var html = [], select = this.element, opts = this.options, selected, match;
  
 			// if the value returned from the ajax request is valid json and isn't empty
 			if( $.isPlainObject(data) && !$.isEmptyObject(data) ){
@@ -183,15 +183,16 @@ $.fn.relatedSelects = function( options ){
 			
 			// inject new markup
 			select
-				.find('option:gt(1)') // TODO: change this
+				.find('option[value!='+opts.defaultValue+']')
 				.remove()
 				.end()
 				.append( html.join('') )
 				.removeAttr('disabled');
 			
-			// look for a data-selected attr and a match
+			// look for a data-selected attr
 			selected = select.attr('data-selected');
 			
+			// is there a match?
 			if( selected ){
 				match = select.find('option').filter(function(){
 					return this.value === selected;

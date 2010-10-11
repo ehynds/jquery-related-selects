@@ -16,24 +16,18 @@ $(function(){
 	$("#example-basic").relatedSelects({
 		"basic-countyID": {
 			depends: "basic-stateID",
-			loadingMessage: "Loading counties....",
-			source: [
-				{ value: 'foo', text:'foo' },
-				{ value: 'bar', text:'bar' }
-			]
+			loadingMessage: "Loading counties...",
+			source: "datasupplier.php"
 		},
 		"basic-townID": {
 			depends: "basic-countyID",
-			loadingMessage: "Loading towns....",
+			loadingMessage: "Loading towns...",
 			selected: "bar",
-			source: [
-				{ value: 'foo', text:'foo' },
-				{ value: 'bar', text:'bar' }
-			]
+			source: "datasupplier.php"
 		},
 		"basic-villageID": {
 			depends: "basic-townID",
-			loadingMessage: "Loading villages....",
+			loadingMessage: "Loading villages...",
 			source: 'datasupplier.php'
 		}
 	});
@@ -115,7 +109,7 @@ $(function(){
 	<option value="VT">Vermont</option>
 	</select>
 
-	<select id="basic-countyID" name="countyID" data-selected="bar">
+	<select id="basic-countyID" name="countyID">
 	<option value="">Choose County &raquo;</option>
 	</select>
 
@@ -138,7 +132,7 @@ $(function(){
         <option value="CA">Canada</option>
     </select>
     
-    <select name="state" id="depends-state">
+    <select name="state" id="depends-state" data-selected="MA">
         <option value="">Select a State</option>
     </select>
     
