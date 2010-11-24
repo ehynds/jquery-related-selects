@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>jQuery Related Selects</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>jQuery Related Selects Plugin</title>
+<link type="text/css" rel="stylesheet" href="http://www.erichynds.com/examples/style.css" />
+
 <style type="text/css">
 body { font:12px helvetica, arial, sans-serif; }
-h2 { margin:25px 0 20px 0 }
+h2 { margin:30px 0 10px 0 }
+h2.first { margin-top:0 }
 #placeholder { color:black; padding:8px; border:2px solid black; display:none }
 #placeholder.success { color:green; border-color:green; }
 #placeholder.error { color:red; border-color: red }
 </style>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"></script>
 <script type="text/javascript" src="src/jquery.relatedselects.js"></script>
 <script type="text/javascript">
 $(function(){
@@ -121,26 +125,35 @@ $(function(){
 </head>
 <body>
 
+<div id="bar">
+	<h1><a href="http://www.erichynds.com">eric<span>hynds</span></a></h1>
+	<div><a href="http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/">&laquo; Return to Blog Post</a></div>
+</div>
+
+<div id="content">
+
 <h1>jQuery Related Selects Plugin 2.0</h1>
 
-<h2>Demo: basic usage</h2>
-<p>The state select is pre-populated, and the rest will populate based on preceding values.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.  This demo shows four select boxes, but you can have as little as 2 and as many as your heart desires.</p>
+<p>Please view the source of this page to see the underlying code.</p>
+
+<h2 class="first">Demo: basic usage</h2>
+<p>The state select is pre-populated, and the rest will populate based on preceding values via AJAX.  Each select is configured with a custom loading message, and the default option text is set to &quot;Choose an Option&quot;.  This demo shows four select boxes, but you can have as little as 2 and as many as your heart desires.</p>
 <form id="example-basic">
-	<select id="basic-state" name="stateID">
+	<select name="state" id="basic-state">
 	<option value="">Choose State &raquo;</option>
 	<option value="MA">Massachusetts</option>
 	<option value="VT">Vermont</option>
 	</select>
 
-	<select id="basic-county" name="countyID">
+	<select name="county" id="basic-county">
 	<option value="">Choose County &raquo;</option>
 	</select>
 
-	<select id="basic-town" name="townID">
+	<select name="town" id="basic-town">
 	<option value="">Choose Town &raquo;</option>
 	</select>
 
-	<select id="basic-village" name="villageID">
+	<select name="village" id="basic-village">
 	<option value="">Choose Village &raquo;</option>
 	</select>
 </form>
@@ -179,8 +192,8 @@ $(function(){
     <p id="placeholder" class="error"></p>
 </form>
 
-<h2>Demo: automatically select values</h2>
-<p>A common use case is pre-selecting values that are returned from the server, like in an edit form.  By adding the HTML5 <strong>data-selected</strong> attribute to your select, with a value to match a value returned from your source attribute, you can automatically select a dynamically created option.</p>
+<h2>Demo: pre-populate values throughout the chain</h2>
+<p>A common use case is to pre-select values throughout the chain on page load, like in an edit form.  By adding the HTML5 <code><strong>data-selected=&quot;value&quot;</strong></code> attribute to your select, with a value to match a value returned from your source attribute, you can automatically select a dynamically created option.</p>
 
 <form id="example-attr">
     <select name="country" id="attr-country">
@@ -196,6 +209,8 @@ $(function(){
         <option value="">Select a County</option>
     </select>
 </form>
+
+</div>
 
 </body>
 </html>

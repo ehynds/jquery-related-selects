@@ -16,11 +16,11 @@
 $.fn.relatedSelects = function( options ){
 	
 	function RelatedSelect( form, options ){
-		var selects = this.selects = [], form = $(form), i = 0;
+		var selects = this.selects = [], form = $(form), i = 0, self = this;
 		
 		// build an array of select instances
 		$.each(options, function( name ){
-			selects[i++] = new Select( name, this, form );
+			selects[i++] = new Select( name, this, form, self );
 		});
 		
 		// store obj in form's data cache
@@ -29,13 +29,14 @@ $.fn.relatedSelects = function( options ){
 		return this;
 	}
 	
-	function Select( name, options, form ){
+	function Select( name, options, form, parent ){
 		var elem = document.getElementById( name );
 		this.form = form;
 		this.element = $(elem);
 		this.options = $.extend({}, $.fn.relatedSelects.options, options);
 		this.dependencies = [];
 		this.satisfied = [];
+		this.parent = parent;
 		
 		// let's do this thing
 		this._init();
@@ -67,7 +68,7 @@ $.fn.relatedSelects = function( options ){
 			}
 			
 			// build a loading message
-			self.loading = $('<option selected="selected">'+opts.loadingMessage+'</option>');
+			self.loading = $('<option selected="selected" value="">'+opts.loadingMessage+'</option>');
 			
 			// listen to the change event on each dependency
 			// self obj in here is the elem being updated!
@@ -96,7 +97,7 @@ $.fn.relatedSelects = function( options ){
 						.attr("selected","selected")
 						.trigger("change.relatedselects");
 					
-					// legit values, mark as satisfied
+				// legit values, mark as satisfied
 				} else {
 					if( index === -1 ){
 						satisfied.push( this.name );
@@ -140,7 +141,7 @@ $.fn.relatedSelects = function( options ){
 				this.xhr = $.ajax({
 					url: opts.source,
 					dataType: opts.dataType,
-					data: self.form.serialize(),
+					data: this._buildParams(),
 					beforeSend: function(){
 						opts.onLoadingStart.call( elem );
 					},
@@ -156,7 +157,7 @@ $.fn.relatedSelects = function( options ){
 					}
 				});
 				
-				// array datasource
+			// array datasource
 			} else if( $.isArray( source ) ){
 				self._populate( source );
 			}
@@ -168,7 +169,6 @@ $.fn.relatedSelects = function( options ){
  
 			// if the value returned from the ajax request is valid json and isn't empty
 			if( $.isPlainObject(data) && !$.isEmptyObject(data) ){
-				
 				// build the options
 				$.each(data, function(i,item){
 					html.push('<option value="'+i+'">' + item + '</option>');
@@ -176,12 +176,10 @@ $.fn.relatedSelects = function( options ){
 				
 			// html datatype
 			} else if( typeof data === 'string' && $.trim(data).length ){
-				
 				html.push($.trim(data));
 				
 			// array of objects
 			} else if( $.isArray(data) && data.length ){
-				
 				$.each(data, function(i,obj){
 					html.push('<option value="'+obj.value+'">' + obj.text + '</option>');
 				});
@@ -189,7 +187,6 @@ $.fn.relatedSelects = function( options ){
 			// if the response is invalid/empty, reset the default option
 			// and fire the onEmptyResult callback
 			} else {
-				
 				if( !opts.disableIfEmpty ){
 					select.removeAttr('disabled');
 				}
@@ -222,6 +219,17 @@ $.fn.relatedSelects = function( options ){
 			
 			// remove the loading message
 			this.loading.detach();
+		},
+		
+		// builds a query string to pass to the server
+		_buildParams: function(){
+			
+			// TODO: test this - i don't think this.parent will be 
+			// fully populated when this thing is kicked off
+			
+			return $.param($.map(this.parent.selects, function( obj ){
+				return obj.dependencies;
+			}));
 		}
 	};
 	
