@@ -2,14 +2,14 @@
 
 Demos @ [http://www.erichynds.com/examples/jquery-related-selects/](http://www.erichynds.com/examples/jquery-related-selects/)  
 jQuery project page @ [http://plugins.jquery.com/project/related-selects](http://plugins.jquery.com/project/related-selects)  
-Blog post/comments @ [http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/](http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/)  
+Blog post/comments @ [http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/](http://www.erichynds.com/jquery/jquery-related-dependent-selects-plugin/)
 
-Related Selects is a jQuery plugin that allows you to create any number of select boxes whose options are determined upon the selected value of another.  Select boxes can be populated via AJAX (returning HTML or JSON), an array, or custom logic.
+Related Selects is a jQuery plugin that allows you to create any number of select boxes whose options are determined upon the selected value of another.  Select boxes can be populated via AJAX (returning HTML or JSON), an array, or custom logic, and each select can have multiple dependencies.
 
 ### Usage
 
 In the example below, changing the "state" select updates the "county" select and so on.  The values of all four select
-boxes are serialized and passed to datasupplier.php, which returns data for the next select box in JSON format (default).
+boxes are serialized and passed to datasupplier.php, which returns data for the next select box in JSON format.
 
 The `relatedSelects` method must be called on a form element and it accepts an object as an options parameter.  Each key within the object corresponds to the ID of a select box.  Each key itself is an object, for which you can set specific options for that particular select in the chain.
 
@@ -51,7 +51,7 @@ The `relatedSelects` method must be called on a form element and it accepts an o
 		}
 	});
 
-In the above example we pass an object to relatedSelects with three keys: county, town, and village.  These keys correspond to the ID of each select in the form that requires a dependency.  Each key in the options object is an object itself, each select can be individually customized with a different source, dependency, etc.  The options below are available to the configuration object for each key.
+In the above example we pass an object to relatedSelects with three keys: county, town, and village.  These keys correspond to the ID of each select in the form that requires a dependency.  Each key in the options object is an object itself, so that each select can be individually customized with a different source, dependency, etc.  The options below are available to the configuration object for each key.
 
 ### Options
 
@@ -85,7 +85,7 @@ Required.  Use this option to specify the dependencies for each select box.  If 
 >> Multiple dependencies:
 >> `depends: ['state','town','country'] // where each item in the array is an ID of another select box`
 
-The order in which you declare multiple depencencies is not important.  Each must be satisfied for the select box to populate and enable.
+The order in which you declare multiple dependencies is not important.  Each must be satisfied for the select box to populate and enable.
 
 > loadingMessage
 
@@ -93,7 +93,7 @@ Optional.  The text to change the select box to while it is being populated.  De
 
 > defaultValue
 
-Optional.
+Optional.  The value of the option tag that instructs a user to choose an option.  If this option is chosen, the chain will not be kicked off and the dependency will no longer be considered met.  Default is an empty string.
 
 > disableIfEmpty
 
@@ -132,3 +132,18 @@ Optional.  A callback to fire when a select box is changed.  Receives two parame
 > onEmptyResult
 
 Optional.  A callback to fire when no results are returned after changing a select.
+
+### Pre-populating a dynamic chain
+
+Consider an "edit" form where the entire chain should be pre-populated based on already known values.  To do this with relatedSelects, simply set the attribute `data-selected` to the value of the option that should be selected.  When the page loads and an option with this value is found inside the select, the option tag is selected which kicks off the chain.
+
+In the example below, the "make" select box is rendered when the page initially loads.  Since the first option has the selected attribute, the chain will be kicked off and automatically populate the "model" select.  If within the "model" select exists an option with the value "tacoma", that option will automatically be selected and cause the "year" select to populate.  The process
+continues throughout the chain.
+
+	<select id="make">
+	<option value="toyo" selected="selected">Toytoa</option>
+	<option value="chev">Chevrolet</option>
+	</select>
+
+	<select id="model" data-selected="tacoma"></select>
+	<select id="year" data-selected="2006"></select>
