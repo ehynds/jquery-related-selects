@@ -6,6 +6,7 @@ sleep(1);
 $stateID = $_GET['stateID'];
 $countyID = $_GET['countyID'];
 $townID = $_GET['townID'];
+$industryID = $_GET['industryID'];
 $html = $_GET['html'];
 
 $states = array();
@@ -64,6 +65,11 @@ $villages['VT']['CHIT']['ESS']['ESSE'] = 'Essex';
 $villages['VT']['CHIT']['ESS']['ESSJ'] = 'Essex Junction';
 $villages['VT']['CHIT']['ESS']['JERI'] = 'Jerico';
 
+$industries['HARDWARE'] = array();
+$industries['HARDWARE']['DELL'] = "Dell";
+$industries['HARDWARE']['APPLE'] = "Apple";
+$industries['SOFTWARE']['APPLE'] = "MacOSX";
+$industries['SOFTWARE']['UBUNTU'] = "Ubuntu";
 
 if($stateID && !$countyID && !$townID){
 	echo json_encode( $counties[$stateID] );
@@ -71,6 +77,8 @@ if($stateID && !$countyID && !$townID){
 	echo json_encode( $towns[$stateID][$countyID] );
 } elseif( isset($villages[$stateID][$countyID][$townID]) ) {
 	echo json_encode( $villages[$stateID][$countyID][$townID] );
+} elseif($industryID) {
+	echo json_encode($industries[$industryID]);
 } else {
 	echo '{}';
 }
