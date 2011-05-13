@@ -43,7 +43,7 @@ Required.  An array or object of select boxes you want to be dependent.  Each on
 override any of the options below on a select-by-select basis you can pass this as an object.  See examples.
 
 > selectSets
-Optional. An array of select boxes by related set you want to be dependant, allows multiple related select groups in a single form. Please remember to put pass
+Optional.  An array of select boxes by related set you want to be dependant, allows multiple related select groups in a single form. Please remember to put pass
 parameter 'onChangeLoad' for each select group. 
 
 	$("form").relatedSelects({
