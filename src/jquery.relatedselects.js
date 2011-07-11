@@ -74,7 +74,6 @@ $.fn.relatedSelects = function( options ){
 			// self obj in here is the elem being updated!
 			// "this" is the calling select box
 			$(dependencies).bind("change.relatedselects", function(){
-
 				// get the relatedselect obj associated with the calling elem
 				var obj = $.data(this, "relatedSelect") || {},
 					o = $.extend({}, opts, obj.options || {}),
@@ -94,8 +93,8 @@ $.fn.relatedSelects = function( options ){
 					self.element
 						.attr("disabled","disabled")
 						.find("option[value="+defaultValue +"]")
-						.attr("selected","selected")
-						.trigger("change.relatedselects");
+						.attr("selected","selected");
+					self.element.trigger("change.relatedselects").trigger("disabled");
 
 				// legit values, mark as satisfied
 				} else {
@@ -210,12 +209,12 @@ $.fn.relatedSelects = function( options ){
 			}
 			select.removeAttr('disabled');
 			if (opts.disableIfEmpty && $.isEmptyObject(html)) {
+				select.trigger('disabled');
 				select.attr('disabled','disabled');
 			}
 
 			// look for a data-selected attr
 			selected = select.attr('data-selected');
-
 			// is there a match?
 			if( selected ){
 				match = select.find('option').filter(function(){
@@ -224,12 +223,17 @@ $.fn.relatedSelects = function( options ){
 
 				// only trigger change event if there was a matching value
 				if( match.length ){
-					select.trigger('change');
+//					select.trigger('change');
 				}
 			}
-
 			// remove the loading message
 			this.loading.detach();
+			// select first item
+			var $selectOptionEls = select.find('option');
+			if ($selectOptionEls.length>0) {
+				$selectOptionEls.filter(':first').attr('selected','selected');
+			}
+			select.trigger('change');
 		},
 
 		// builds a query string to pass to the server
