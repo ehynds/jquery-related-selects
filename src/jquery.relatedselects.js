@@ -29,7 +29,7 @@
 		}
 		
 		// make array of select names
-		$.each(opts.selects, function(){
+		$.each(opts.selects, function(key){
 			selects.push(key);
 		});
 		
