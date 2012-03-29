@@ -87,14 +87,14 @@
 			if(value.length > 0 && value !== o.loadingMessage && $next){
 			
 				// reset all selects after this one
-				resetAfter(elem);
+				resetAfter(elem,o);
 			
 				// populate the next select
 				populate($select,$next,o);
 			
 			// otherwise, make all the selects after this one disabled and select the first option
 			} else if($next){
-				resetAfter(elem);
+				resetAfter(elem,o);
 			}
 		}
 		
@@ -157,10 +157,11 @@
 			return (options.length === 0 || (options.length === 1 && options.filter(':first').attr('value').length === 0)) ? false : true;
 		}
 		
-		function resetAfter(elem){
+		function resetAfter(elem,o){
 			var thispos = getPosition(elem);
 			for (var x=thispos+1, len=selects.length; x<len; x++){
-				$("select[name='" + selects[x] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected');
+				var $select = $("select[name='" + selects[x] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected').trigger('change');
+				o.onAfterReset.call($select);
 			}
 		}
 		
@@ -196,7 +197,8 @@
 		onLoadingStart: function(){},
 		onLoadingEnd: function(){},
 		onChange: function(){},
-		onEmptyResult: function(){}
+		onEmptyResult: function(){},
+		onAfterReset: function(){}
 	};
 
 })(jQuery);
