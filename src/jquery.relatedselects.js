@@ -29,7 +29,7 @@
 		}
 		
 		// make array of select names
-		$.each(opts.selects, function(){
+		$.each(opts.selects, function(key){
 			selects.push(key);
 		});
 		
@@ -111,7 +111,7 @@
 		
 			// disable this select box, add loading msg
 			$select.attr('disabled', 'disabled').html('<option value="">' + o.loadingMessage + '</option>');
-		
+			
 			// perform ajax request
 			$.ajax({
 				beforeSend: function(){ o.onLoadingStart.call($select); },
@@ -119,6 +119,7 @@
 				dataType: o.dataType,
 				data: params,
 				url: o.onChangeLoad,
+				dataFilter: o.dataFilter,
 				success: function(data){
 					var html = [], defaultOptionText = $select.data('defaultOption');
 					
@@ -129,7 +130,6 @@
 					
 					// if the value returned from the ajax request is valid json and isn't empty
 					if(o.dataType === 'json' && typeof data === 'object' && data){
-					
 						// build the options
 						$.each(data, function(i,item){
 							html.push('<option value="'+i+'">' + item + '</option>');
@@ -192,6 +192,7 @@
 		loadingMessage: 'Loading, please wait...',
 		disableIfEmpty: false,
 		dataType: 'json',
+		dataFilter: false,
 		onChangeLoad: '',
 		onLoadingStart: function(){},
 		onLoadingEnd: function(){},
