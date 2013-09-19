@@ -132,7 +132,8 @@
 					
 						// build the options
 						$.each(data, function(i,item){
-							html.push('<option value="'+i+'">' + item + '</option>');
+							var isObj = typeof(item) == 'object';
+							html.push('<option value="'+(isObj?item.value:i)+'">' + (isObj?item.text:item) + '</option>');
 						});
 
 						$select.html( html.join('') ).removeAttr('disabled');
