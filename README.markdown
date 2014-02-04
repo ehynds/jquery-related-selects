@@ -42,6 +42,26 @@ boxes are serialized and passed to datasupplier.php, which returns data for the 
 Required.  An array or object of select boxes you want to be dependent.  Each one will depend on each other **in the order in which they are passed in.**  If you want to 
 override any of the options below on a select-by-select basis you can pass this as an object.  See examples.
 
+> selectSets
+
+Optional.  An array of select boxes by related set you want to be dependant, allows multiple related select groups in a single form. Please remember to put pass
+parameter 'onChangeLoad' for each select group. 
+
+	$("form").relatedSelects({
+		selectSets: [
+			{
+				onChangeLoad:	'datasupplier.php',
+				selects: 		['stateID', 'countyID']
+			},
+			{
+				onChangeLoad:	'datasupplier.php',
+				selects: 		['industryID', 'subindustryID']
+			},
+		]
+	});
+
+IMPORTANT NOTE: Usage of this option overrides the 'selects' option. Creating an additional parameter allows for backwards compatibility
+
 > dataType
 
 The type of data the server will return.  Either 'json' or 'html'.

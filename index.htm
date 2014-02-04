@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>jQuery Related Selects</title>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" type="text/javascript"></script>
 <script src="src/jquery.relatedselects.min.js" type="text/javascript"></script>
 
 <style type="text/css">
@@ -67,6 +67,21 @@ $(function(){
 		onChangeLoad: 'datasupplier.htm',
 		dataType: 'html',
 		selects: ['stateID', 'countyID']
+	});
+	
+	$("#example-8").relatedSelects({
+		loadingMessage: 'Please wait',
+		disableIfEmpty:true,
+		selectSets: [
+			{
+				onChangeLoad:	'datasupplier.php',
+				selects:		['stateID', 'countyID']
+			},
+			{
+				onChangeLoad:	'datasupplier.php',
+				selects:		['industryID', 'subindustryID']
+			},
+		]
 	});
 });
 </script>
@@ -174,7 +189,7 @@ the 'Town' select automatically populates. Individual selects do not have any cu
 	<option value="">Choose County &raquo;</option>
 	</select>
 	
-	<div><!-- placeholder for our callback message --></div>
+	<div>&nbsp;</div>
 </form>
 
 <h2>Example 6</h2>
@@ -208,6 +223,28 @@ the 'Town' select automatically populates. Individual selects do not have any cu
 
 	<select name="countyID">
 	<option value="">Choose County &raquo;</option>
+	</select>
+</form>
+
+<h2>Example 8</h2>
+<p>Usage of multiple related select groups within the same form.</p>
+<form id="example-8">
+	<select name="stateID">
+	<option value="">Choose State &raquo;</option>
+	<option value="MA">Massachusetts</option>
+	<option value="VT">Vermont</option>
+	<option value="TX">Texas</option>
+	</select>
+	<select name="countyID">
+	<option value="">Choose County &raquo;</option>
+	</select>
+	<select name="industryID">
+	<option value="">Choose Industry &raquo;</option>
+	<option value="HARDWARE">Hardware</option>
+	<option value="SOFTWARE">Software</option>
+	</select>
+	<select name="subindustryID">
+	<option value="">Choose Sub-Industry &raquo;</option>
 	</select>
 </form>
 

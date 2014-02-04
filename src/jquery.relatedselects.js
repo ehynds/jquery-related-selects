@@ -5,6 +5,7 @@
  * http://github.com/ehynds/jquery-related-selects
  *
  * Copyright (c) 2009 Eric Hynds
+ * Edited by Mark Walker 2011 (included ability to have mulitple related-selects within the same form)
  *
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php
@@ -21,50 +22,69 @@
 	};
 
 	var RelatedSelect = function(context, opts) {
+		
 		var $context = $(context), selects = [];
 	
-		// if the selects option is an array convert it to an object
-		if($.isArray(opts.selects)){
-			selectsToObj();
+		//determine if we're dealing with a select-set (eg. set of related-selects)
+		if(typeof opts.selectSets != 'undefined') {
+			$.each(opts.selectSets, function(index){
+				opts.onChangeLoad = this.onChangeLoad;
+				opts.selects = this.selects;
+				setupSelectStructure(context, opts, index);
+			}); 
+		} else {
+			setupSelectStructure(context, opts, 0);
 		}
 		
-		// make array of select names
-		$.each(opts.selects, function(){
-			selects.push(key);
-		});
 		
-		// cache the options where the value is empty for each select before processing occurs.
-		saveDefaultOptionText(); 
-	
-		// go through each select box & settings passed into options
-		$.each(opts.selects, function(elem,o){
-			var $select = $context.find("select[name='" + elem + "']"), // jquery ref to this select box
-				$next = next(elem), // the select box after this one
-				selectedValue = $select.val(); // currently selected value
-		
-			// extend element-specific options
-			// set the defaultOptionText to whatever was passed in or the option where value is blank.
-			o = $.extend({
-				defaultOptionText: opts.defaultOptionText || $select.data('defaultOption') 
-			}, opts, o);
-		
-			// store the new default option text
-			$select.data('defaultOption', o.defaultOptionText);
-
-			// bind the change event
-			$select.change(function(){
-				o.onChange.call($select);
-				process( $select, $next, elem, o );
-			});
-	
-			// if there is already a selected option in this select and the next one is already populated, skip this iteration
-			if(selectedValue && selectedValue.length > 0 && isPopulated($next)){
-				return;
+		function setupSelectStructure(context, opts, index) {
+			
+			var $context = $(context), $selects = [];
+			
+			// if the selects option is an array convert it to an object
+			if($.isArray(opts.selects)){
+				selectsToObj();
 			}
 			
-			// process the select box upon page load
-			process( $select, $next, elem, o );
-		});
+			// make array of select names
+			$.each(opts.selects, function(key){
+				//selects.push(key);
+				selects.push({"name": key,"set": index});
+			});
+		
+			// cache the options where the value is empty for each select before processing occurs.
+			saveDefaultOptionText();
+			
+			// go through each select box & settings passed into options
+			$.each(opts.selects, function(elem,o){
+				
+				var $select = $context.find("select[name='" + elem + "']"), // jquery ref to this select box
+					$next = next(elem, index), // the select box after this one
+					selectedValue = $select.val(); // currently selected value
+			
+				// extend element-specific options
+				// set the defaultOptionText to whatever was passed in or the option where value is blank.
+				o = $.extend({
+					defaultOptionText: opts.defaultOptionText || $select.data('defaultOption') 
+				}, opts, o);
+			
+				// store the new default option text
+				$select.data('defaultOption', o.defaultOptionText);
+	
+				$select.change(function(){
+					o.onChange.call($select);
+					process( $select, $next, elem, o, index);
+				});
+				
+				// if there is already a selected option in this select and the next one is already populated, skip this iteration
+				if(selectedValue && selectedValue.length > 0 && isPopulated($next)){
+					return;
+				}
+				
+				// process the select box upon page load
+				process( $select, $next, elem, o, index );
+			});
+		}
 		
 		function saveDefaultOptionText(){
 			var $select, text;
@@ -76,7 +96,8 @@
 			}
 		}
 		
-		function process($select,$next,elem,o){
+		function process($select,$next,elem,o,index){
+			
 			if(!$next.length){
 				return;
 			}
@@ -87,28 +108,29 @@
 			if(value.length > 0 && value !== o.loadingMessage && $next){
 			
 				// reset all selects after this one
-				resetAfter(elem);
+				resetAfter(elem, index);
 			
 				// populate the next select
-				populate($select,$next,o);
+				populate($select,$next,o,index);
 			
 			// otherwise, make all the selects after this one disabled and select the first option
 			} else if($next){
-				resetAfter(elem);
+				resetAfter(elem, index);
 			}
 		}
 		
-		function populate($caller,$select,o){
+		function populate($caller,$select,o, index){
 			var selectors = [], params;
 		
 			// build a selector for each select box in this context
 			for(var x=0, len=selects.length; x<len; x++){
-				selectors.push('select[name="'+selects[x]+'"]');
+				if(selects[x]["set"] != index) continue;
+				selectors.push('select[name="'+selects[x]["name"]+'"]');
 			}
-		
+			
 			// take those selectors and serialize the data in them
 			params = $( selectors.join(','), $context ).serialize();
-		
+			
 			// disable this select box, add loading msg
 			$select.attr('disabled', 'disabled').html('<option value="">' + o.loadingMessage + '</option>');
 		
@@ -157,21 +179,25 @@
 			return (options.length === 0 || (options.length === 1 && options.filter(':first').attr('value').length === 0)) ? false : true;
 		}
 		
-		function resetAfter(elem){
-			var thispos = getPosition(elem);
+		function resetAfter(elem, index){
+			var thispos = getPosition(elem, index);
 			for (var x=thispos+1, len=selects.length; x<len; x++){
-				$("select[name='" + selects[x] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected');
+				if(selects[x]["set"] != index) continue;
+				$("select[name='" + selects[x]["name"] + "']", $context ).attr('disabled','disabled').find('option:first').attr('selected','selected');
 			}
 		}
 		
-		function next(elem){
-			return $context.find("select[name='" + selects[ getPosition(elem)+1 ] + "']");
+		function next(elem, index){
+			if(typeof selects[ getPosition(elem, index)+1 ] == "undefined")
+				return  $context.find("select[name='undefined']");
+			else
+				return $context.find("select[name='" + selects[ getPosition(elem, index)+1 ]["name"] + "']");
 		}
 		
 		// returns the position of an element in the array
-		function getPosition(elem){
+		function getPosition(elem, index){
 			for (var i=0, len=selects.length; i<len; i++){
-				if(selects[i] === elem){ 
+				if(selects[i]["name"] === elem && selects[i]["set"] == index){ 
 					return i; 
 				}
 			}
@@ -196,8 +222,8 @@
 		onLoadingStart: function(){},
 		onLoadingEnd: function(){},
 		onChange: function(){},
-		onEmptyResult: function(){}
+		onEmptyResult: function(){},
+		defaultOptionText: 'Select....' //a little cleanup
 	};
 
 })(jQuery);
-
