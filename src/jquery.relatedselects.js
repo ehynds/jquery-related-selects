@@ -14,21 +14,21 @@
 (function($){
 
 $.fn.relatedSelects = function( options ){
-	
+
 	function RelatedSelect( form, options ){
 		var selects = this.selects = [], form = $(form), i = 0, self = this;
-		
+
 		// build an array of select instances
 		$.each(options, function( name ){
 			selects[i++] = new Select( name, this, form, self );
 		});
-		
+
 		// store obj in form's data cache
 		$.data(form, "relatedSelects", this);
-		
+
 		return this;
 	}
-	
+
 	function Select( name, options, form, parent ){
 		var elem = document.getElementById( name );
 		this.form = form;
@@ -37,13 +37,13 @@ $.fn.relatedSelects = function( options ){
 		this.dependencies = [];
 		this.satisfied = [];
 		this.parent = parent;
-		
+
 		// let's do this thing
 		this._init();
-		
+
 		return this;
 	}
-	
+
 	Select.prototype = {
 		_init: function(){
 			var self = this,
@@ -51,91 +51,90 @@ $.fn.relatedSelects = function( options ){
 				depends = opts.depends,
 				satisfied = self.satisfied,
 				dependencies = self.dependencies;
-			
+
 			// build an array of dependencies
 			if( typeof depends === "string" && depends.length ){
 				dependencies.push( document.getElementById(depends) );
-				
+
 			} else if( $.isArray(depends) ){
 				dependencies = $.map(depends, function(elem){
 					return document.getElementById( elem );
 				});
 			}
-			
+
 			// disable selects that have dependencies
-			if( dependencies.length ){
+			if( dependencies.length && !self._isPopulated(self.element, opts)){
 				self.element.attr("disabled","disabled");
 			}
-			
+
 			// build a loading message
 			self.loading = $('<option selected="selected" value="">'+opts.loadingMessage+'</option>');
-			
+
 			// listen to the change event on each dependency
 			// self obj in here is the elem being updated!
 			// "this" is the calling select box
 			$(dependencies).bind("change.relatedselects", function(){
-				
 				// get the relatedselect obj associated with the calling elem
 				var obj = $.data(this, "relatedSelect") || {},
 					o = $.extend({}, opts, obj.options || {}),
 					defaultValue = o.defaultValue,
 					index = $.inArray(this.name, satisfied);
-				
+
 				// abort the current ajax request if exists
 				if( self.xhr ){
 					self.xhr.abort();
 				}
-				
+
 				// selected an option considered to be invalid?
 				if( this.value == defaultValue  ){
 					satisfied.splice(index, 1);
-					
+
 					// reset element
 					self.element
 						.attr("disabled","disabled")
 						.find("option[value="+defaultValue +"]")
-						.attr("selected","selected")
-						.trigger("change.relatedselects");
-					
+						.attr("selected","selected");
+					self.element.trigger("change.relatedselects").trigger("disabled");
+
 				// legit values, mark as satisfied
 				} else {
 					if( index === -1 ){
 						satisfied.push( this.name );
 					}
 				}
-				
+
 				// fire onchange callback
 				o.onChange.call( self.element, this, dependencies.length-satisfied.length );
 				self.options.onDependencyChanged.call( self.element, satisfied, dependencies );
-				
+
 				// if this select box is satisfied, run it.
 				if( satisfied.length === dependencies.length ){
 					self._fetch( this );
 				}
 			})
 			.filter(function(){
-				return $(this).find(":selected").val() !== opts.defaultValue;
+				return !(self._isPopulated($(this), opts) && self._isPopulated(self.element, opts)) ;
 			})
 			.each(function(){
 				$(this).triggerHandler("change.relatedselects");
 			});
 		},
-		
+
 		// "this" is the select being updated, not the caller
 		_fetch: function( caller ){
 			var self = this,
 				opts = self.options,
 				elem = this.element,
 				source = opts.source;
-			
+
 			// insert loading option
 			this.loading.prependTo( elem );
-			
+
 			// resolve function sources
 			if( $.isFunction(source) ){
 				source = source.call( self.form[0] );
 			}
-			
+
 			// ajax data source
 			if( typeof source === "string" ){
 				this.xhr = $.ajax({
@@ -156,83 +155,99 @@ $.fn.relatedSelects = function( options ){
 						opts.onError.call( elem );
 					}
 				});
-				
+
 			// array datasource
 			} else if( $.isArray( source ) ){
 				self._populate( source );
 			}
 		},
-		
+
+		// data fed from _fetch
+		_isPopulated: function( $select, opts ){
+			var options = $select.find('option');
+			return (
+				options.length === 0 ||
+				options.filter(":selected").val() == opts.defaultValue ||
+				(options.length === 1 && options.filter(':first').attr('value').length === 0)
+			) ? false : true;
+		},
+
 		// data fed from _fetch
 		_populate: function( data ){
 			var html = [], select = this.element, opts = this.options, selected, match;
- 
+
 			// if the value returned from the ajax request is valid json and isn't empty
 			if( $.isPlainObject(data) && !$.isEmptyObject(data) ){
 				// build the options
 				$.each(data, function(i,item){
 					html.push('<option value="'+i+'">' + item + '</option>');
 				});
-				
+
 			// html datatype
 			} else if( typeof data === 'string' && $.trim(data).length ){
 				html.push($.trim(data));
-				
+
 			// array of objects
 			} else if( $.isArray(data) && data.length ){
 				$.each(data, function(i,obj){
 					html.push('<option value="'+obj.value+'">' + obj.text + '</option>');
 				});
-				
+
 			// if the response is invalid/empty, reset the default option
 			// and fire the onEmptyResult callback
 			} else {
 				if( !opts.disableIfEmpty ){
 					select.removeAttr('disabled');
 				}
-				
-				opts.onEmptyResult.call( select, caller );
+				opts.onEmptyResult( select );
 			}
-			
+
 			// inject new markup
-			select
-				.find('option[value!='+opts.defaultValue+']')
-				.remove()
-				.end()
-				.append( html.join('') )
-				.removeAttr('disabled');
-			
+			select.find('option[value!='+opts.defaultValue+']').remove();
+			if (!$.isEmptyObject(html) ) {
+				select.append(html.join(''));
+			}
+			select.removeAttr('disabled');
+			if (opts.disableIfEmpty && $.isEmptyObject(html)) {
+				select.trigger('disabled');
+				select.attr('disabled','disabled');
+			}
+
 			// look for a data-selected attr
 			selected = select.attr('data-selected');
-			
 			// is there a match?
 			if( selected ){
 				match = select.find('option').filter(function(){
 					return this.value === selected;
 				}).attr('selected','selected');
-				
+
 				// only trigger change event if there was a matching value
 				if( match.length ){
-					select.trigger('change');
+//					select.trigger('change');
 				}
 			}
-			
 			// remove the loading message
 			this.loading.detach();
+			// select first item
+			var $selectOptionEls = select.find('option');
+			if ($selectOptionEls.length>0) {
+				$selectOptionEls.filter(':first').attr('selected','selected');
+			}
+			select.trigger('change');
 		},
-		
+
 		// builds a query string to pass to the server
 		_buildParams: function(){
-			
-			// TODO: test this - i don't think this.parent will be 
+
+			// TODO: test this - i don't think this.parent will be
 			// fully populated when this thing is kicked off
-			
+
 			return $.param($.map(this.parent.selects, function( obj ){
 				return obj.dependencies;
 			}));
 		}
 	};
-	
+
 	return this.each(function(){
 		$.data(this, "relatedSelect", this, new RelatedSelect( this, options ));
 	});
